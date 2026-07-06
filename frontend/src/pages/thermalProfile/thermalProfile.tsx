@@ -5,6 +5,7 @@ import axiosInstance from '../../config/axiosInstance';
 import running_test_gif from '../../assets/images/runnin_test.gif';
 import Abort_Run_image from '../../assets/images/abort_icon.svg';
 import back from '../../assets/images/back.svg';
+import thermalDummyData from './dummy_data.json';
 
 export const ThermalProfilePage = () => {
   const { ExperimentData, dispatchExperimentData } = useContext(
@@ -26,11 +27,13 @@ export const ThermalProfilePage = () => {
   const [lidTemps, setLidTemps] = useState<number[]>([]);
   const [tecTemps, setTecTemps] = useState<number[]>([]);
   const [timePoints, setTimePoints] = useState<number[]>([]);
-  const [dummyPoints, setDummyPoints] = useState<Array<{ lid_temp: number; tec_temp: number }>>([]);
+  const [dummyPoints, setDummyPoints] = useState<Array<{ lid_temp: number; tec_temp: number }>>(
+    (thermalDummyData && Array.isArray(thermalDummyData.points)) ? thermalDummyData.points : []
+  );
 
   // Load dummy data for simulation
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (!isSimulated) return;
 
     import('../../../wailsjs/go/main/App')
@@ -55,7 +58,7 @@ export const ThermalProfilePage = () => {
 
   // Telemetry effect: listens to Wails events or falls back to HTTP polling
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (isSimulated) return;
 
     let unsubscribeWails: (() => void) | undefined;
@@ -194,8 +197,8 @@ export const ThermalProfilePage = () => {
               }
             }
           } else if (isSimulated && dummyPoints.length > 0) {
-            const limit = Math.min(dummyPoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyPoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 50 + (i / estimatedTime) * (width - 90);
               const y = (height - 40) - ((dummyPoints[i].lid_temp || 0) / 130) * (height - 60);
               if (x < width - 30) {
@@ -230,8 +233,8 @@ export const ThermalProfilePage = () => {
               }
             }
           } else if (isSimulated && dummyPoints.length > 0) {
-            const limit = Math.min(dummyPoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyPoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 50 + (i / estimatedTime) * (width - 90);
               const y = (height - 40) - ((dummyPoints[i].tec_temp || 0) / 130) * (height - 60);
               if (x < width - 30) {

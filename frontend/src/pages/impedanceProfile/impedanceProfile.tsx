@@ -5,6 +5,7 @@ import axiosInstance from '../../config/axiosInstance';
 import running_test_gif from '../../assets/images/runnin_test.gif';
 import Abort_Run_image from '../../assets/images/abort_icon.svg';
 import back from '../../assets/images/back.svg';
+import impedanceDummyData from './impedance_dummy_data.json';
 
 export const ImpedanceProfilePage = () => {
   const { ExperimentData, dispatchExperimentData } = useContext(
@@ -25,11 +26,13 @@ export const ImpedanceProfilePage = () => {
   // Telemetry states for actual backend data
   const [impedanceData, setImpedanceData] = useState<number[]>([]);
   const [timePoints, setTimePoints] = useState<number[]>([]);
-  const [dummyPoints, setDummyPoints] = useState<Array<{ elapsed_seconds: number; impedance: number }>>([]);
+  const [dummyPoints, setDummyPoints] = useState<Array<{ elapsed_seconds: number; impedance: number }>>(
+    (impedanceDummyData && Array.isArray(impedanceDummyData.points)) ? impedanceDummyData.points : []
+  );
 
   // Load dummy data for simulation
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (!isSimulated) return;
 
     import('../../../wailsjs/go/main/App')
@@ -54,7 +57,7 @@ export const ImpedanceProfilePage = () => {
 
   // Telemetry effect: listens to Wails events or falls back to HTTP polling
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (isSimulated) return;
 
     let unsubscribeWails: (() => void) | undefined;
@@ -155,8 +158,8 @@ export const ImpedanceProfilePage = () => {
           // Y-Axis Labels
           ctx.fillStyle = '#64748B';
           ctx.font = '18px sans-serif';
-          ctx.fillText('10k', 15, 25);
-          ctx.fillText('5k', 20, height / 2);
+          ctx.fillText('1200', 10, 25);
+          ctx.fillText('600', 15, height / 2);
           ctx.fillText('0', 25, height - 45);
 
           // Draw Legend
@@ -177,7 +180,7 @@ export const ImpedanceProfilePage = () => {
               const x =
                 55 + ((timePoints[i] || 0) / estimatedTime) * (width - 95);
               const y =
-                height - 40 - ((impedanceData[i] || 0) / 10000) * (height - 60);
+                height - 40 - ((impedanceData[i] || 0) / 1200) * (height - 60);
               if (x < width - 30) {
                 if (!moved) {
                   ctx.moveTo(x, y);
@@ -188,26 +191,11 @@ export const ImpedanceProfilePage = () => {
               }
             }
           } else if (isSimulated && dummyPoints.length > 0) {
-            const limit = Math.min(dummyPoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyPoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 55 + ((dummyPoints[i].elapsed_seconds || 0) / estimatedTime) * (width - 95);
-              const y = height - 40 - ((dummyPoints[i].impedance || 0) / 10000) * (height - 60);
+              const y = height - 40 - ((dummyPoints[i].impedance || 0) / 1200) * (height - 60);
               if (x < width - 30) {
-                if (!moved) {
-                  ctx.moveTo(x, y);
-                  moved = true;
-                } else {
-                  ctx.lineTo(x, y);
-                }
-              }
-            }
-          } else {
-            // Simulated fallback data curve
-            for (let x = 55; x < width - 30; x++) {
-              const t = (x - 55) / 60 - elapsed * 0.08;
-              const y =
-                height * 0.7 - 20 + Math.sin(t * 1.5) * Math.cos(t * 0.5) * 80;
-              if (x < 55 + elapsed * 12) {
                 if (!moved) {
                   ctx.moveTo(x, y);
                   moved = true;

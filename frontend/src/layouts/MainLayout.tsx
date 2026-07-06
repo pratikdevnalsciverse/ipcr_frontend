@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ipcr_text from '../assets/images/I-PCR_white.svg';
 import bhat_biotech_icon from '../assets/images/BhatBioTechLogo.svg';
@@ -8,6 +8,27 @@ import wifi_icon from '../assets/images/wifi_icon.svg';
 export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatDate = (date: Date) => {
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
+  const formatTime = (date: Date) => {
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
 
   // Simple active tab logic
   const getPageTitle = () => {
@@ -53,12 +74,12 @@ export const MainLayout = () => {
           </div>
           <div className="col-span-3 flex items-center justify-center">
             <p className="text-3xl font-normal text-white tracking-wider">
-              01/14/2026
+              {formatDate(currentDateTime)}
             </p>
           </div>
           <div className="col-span-2 flex items-center justify-center">
             <p className="text-3xl font-normal text-white tracking-wider">
-              15:46
+              {formatTime(currentDateTime)}
             </p>
           </div>
         </div>

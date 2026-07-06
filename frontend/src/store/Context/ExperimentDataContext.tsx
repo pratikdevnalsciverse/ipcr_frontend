@@ -24,6 +24,7 @@ export type ExperimentDataAction =
   | { type: "set_CartridgeId"; payload: string }
   | { type: "set_SampleType"; payload: string }
   | { type: "set_Samples"; payload: Partial<Sample> & { well_number: number } }
+  | { type: "set_ExperimentID"; payload: string }
   | { type: "RESET" };
 
 const initialState: ExperimentDataState = {
@@ -60,6 +61,8 @@ const reducer = (state: ExperimentDataState, action: ExperimentDataAction): Expe
       return { ...state, SampleType: action.payload };
     case "set_Samples":
       return { ...state, Samples: updateWell(state.Samples, action.payload) };
+    case "set_ExperimentID":
+      return { ...state, ExperimentID: action.payload };
     case "RESET":
       return initialState;
     default:

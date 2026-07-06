@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../config/axiosInstance';
 import { ExperimentDataContext } from '../../store/Context/ExperimentDataContext';
@@ -19,13 +19,17 @@ export const InsertCartridge = () => {
   const [flag3, setflag3] = useState(false);
   const [isBusy, setIsBusy] = useState(true);
 
+  const manuallyDetectedRef = useRef(false);
+
   const leftfunc = () => {
     navigate('/sample-preview');
   };
 
   const detectingCartridge = async () => {
+    if (manuallyDetectedRef.current) return;
     try {
       const resp = await axiosInstance.get('/get_endstops');
+      if (manuallyDetectedRef.current) return; // double check after async call
       if (resp.data?.code?.startsWith('S')) {
         if (resp.data.data && resp.data.data[0] && resp.data.data[0].Ejector) {
           setIsBusy(false);
@@ -58,9 +62,24 @@ export const InsertCartridge = () => {
   }, []);
 
   const start_run = async () => {
+    const now = new Date();
+    const timeStr = [
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0'),
+    ].join('_');
+    const dateStr = [
+      String(now.getDate()).padStart(2, '0'),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getFullYear()),
+    ].join('_');
+    const generatedId = `EXP_1_${timeStr}_${dateStr}`;
+
+    dispatchExperimentData({ type: 'set_ExperimentID', payload: generatedId });
+
     try {
       const resp = await axiosInstance.post('/start_workflow', {
-        experiment_id: ExperimentData.ExperimentID || 'experiment_mock',
+        experiment_id: generatedId,
       });
 
       if (resp.data?.code?.includes('S')) {
@@ -82,6 +101,7 @@ export const InsertCartridge = () => {
 
   // Developer mock helper to manually simulate detection
   const simulateDetection = () => {
+    manuallyDetectedRef.current = true;
     setIsBusy(false);
     setflag2(false);
     setflag3(true);
@@ -116,15 +136,16 @@ export const InsertCartridge = () => {
         )}
 
         {flag3 && (
-          <div className="w-full flex flex-col items-center h-[70vh]">
+          <div className="w-full flex flex-col items-center h-[70vh] cursor-pointer gap-20">
             <div className="text-[50px] font-poppins font-semibold text-[#353940] mt-[2vh] text-center px-10">
               Cartridge Detected, press ‘Start Run’ to start the test...
             </div>
 
-            <div className="h-[480px] flex items-center justify-center">
+            <div className="h-220 flex items-center justify-center">
               <img
-                className="w-[30vw] max-h-[450px]"
-                src={machine_lid}
+                // className="w-[30vw] max-h-[450px]"
+               className="w-[80vw] max-h-[750px]"
+                src={ipcr_machine_image}
                 alt="Machine Lid"
               />
             </div>

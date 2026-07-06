@@ -5,6 +5,8 @@ import axiosInstance from '../../config/axiosInstance';
 import random_graph from '../../assets/images/random_graph.svg';
 import running_test_gif from '../../assets/images/runnin_test.gif';
 import Abort_Run_image from '../../assets/images/abort_icon.svg';
+import thermalDummyData from '../thermalProfile/dummy_data.json';
+import impedanceDummyData from '../impedanceProfile/impedance_dummy_data.json';
 
 export const RunPage = () => {
   const { ExperimentData, dispatchExperimentData } = useContext(
@@ -28,12 +30,16 @@ export const RunPage = () => {
   const [tecTemps, setTecTemps] = useState<number[]>([]);
   const [impedanceData, setImpedanceData] = useState<number[]>([]);
   const [timePoints, setTimePoints] = useState<number[]>([]);
-  const [dummyPoints, setDummyPoints] = useState<Array<{ lid_temp: number; tec_temp: number }>>([]);
-  const [dummyImpedancePoints, setDummyImpedancePoints] = useState<Array<{ elapsed_seconds: number; impedance: number }>>([]);
+  const [dummyPoints, setDummyPoints] = useState<Array<{ lid_temp: number; tec_temp: number }>>(
+    (thermalDummyData && Array.isArray(thermalDummyData.points)) ? thermalDummyData.points : []
+  );
+  const [dummyImpedancePoints, setDummyImpedancePoints] = useState<Array<{ elapsed_seconds: number; impedance: number }>>(
+    (impedanceDummyData && Array.isArray(impedanceDummyData.points)) ? impedanceDummyData.points : []
+  );
 
   // Load dummy data for simulation
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (!isSimulated) return;
 
     import('../../../wailsjs/go/main/App')
@@ -70,7 +76,7 @@ export const RunPage = () => {
 
   // Telemetry effect: listens to Wails events or falls back to HTTP polling
   useEffect(() => {
-    const isSimulated = import.meta.env.VITE_SIMULATE_DATA !== 'false';
+    const isSimulated = true;
     if (isSimulated) return;
 
     let unsubscribeWails: (() => void) | undefined;
@@ -220,8 +226,8 @@ export const RunPage = () => {
               }
             }
           } else if (isSimulated && dummyPoints.length > 0) {
-            const limit = Math.min(dummyPoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyPoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 40 + (i / estimatedTime) * (width - 60);
               const y = (height - 30) - ((dummyPoints[i].lid_temp || 0) / 130) * (height - 50);
               if (x < width - 20) {
@@ -256,8 +262,8 @@ export const RunPage = () => {
               }
             }
           } else if (isSimulated && dummyPoints.length > 0) {
-            const limit = Math.min(dummyPoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyPoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 40 + (i / estimatedTime) * (width - 60);
               const y = (height - 30) - ((dummyPoints[i].tec_temp || 0) / 130) * (height - 50);
               if (x < width - 20) {
@@ -306,8 +312,8 @@ export const RunPage = () => {
           // Y-Axis Labels
           ctx.fillStyle = '#64748B';
           ctx.font = '14px sans-serif';
-          ctx.fillText('10k', 15, 45);
-          ctx.fillText('5k', 20, height / 2);
+          ctx.fillText('1200', 10, 45);
+          ctx.fillText('600', 15, height / 2);
           ctx.fillText('0', 25, height - 35);
 
           // Draw Legend
@@ -326,7 +332,7 @@ export const RunPage = () => {
           if (!isSimulated && impedanceData.length > 0) {
             for (let i = 0; i < impedanceData.length; i++) {
               const x = 45 + ((timePoints[i] || 0) / estimatedTime) * (width - 65);
-              const y = (height - 30) - ((impedanceData[i] || 0) / 10000) * (height - 50);
+              const y = (height - 30) - ((impedanceData[i] || 0) / 1200) * (height - 50);
               if (x < width - 20) {
                 if (!moved) {
                   ctx.moveTo(x, y);
@@ -337,25 +343,11 @@ export const RunPage = () => {
               }
             }
           } else if (isSimulated && dummyImpedancePoints.length > 0) {
-            const limit = Math.min(dummyImpedancePoints.length, Math.floor(elapsed));
-            for (let i = 0; i < limit; i++) {
+            const limit = Math.min(dummyImpedancePoints.length, Math.floor(elapsed / 2) * 2);
+            for (let i = 0; i < limit; i += 2) {
               const x = 45 + ((dummyImpedancePoints[i].elapsed_seconds || 0) / estimatedTime) * (width - 65);
-              const y = (height - 30) - ((dummyImpedancePoints[i].impedance || 0) / 10000) * (height - 50);
+              const y = (height - 30) - ((dummyImpedancePoints[i].impedance || 0) / 1200) * (height - 50);
               if (x < width - 20) {
-                if (!moved) {
-                  ctx.moveTo(x, y);
-                  moved = true;
-                } else {
-                  ctx.lineTo(x, y);
-                }
-              }
-            }
-          } else {
-            for (let x = 45; x < width - 20; x++) {
-              const t = (x - 45) / 60 - elapsed * 0.08;
-              const y =
-                height * 0.7 - 20 + Math.sin(t * 1.5) * Math.cos(t * 0.5) * 50;
-              if (x < 45 + elapsed * 12) {
                 if (!moved) {
                   ctx.moveTo(x, y);
                   moved = true;

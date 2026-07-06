@@ -44,9 +44,9 @@ function ScreenScaler({ children }: { children: React.ReactNode }) {
       // show diagonal size of container with fainted gray in cm 
       className="w-screen h-screen overflow-hidden flex items-center justify-center bg-neutral-canvas relative"
     >
-      <div className="absolute bottom-4 left-4 text-sm font-mono text-neutral-muted/30 select-none pointer-events-none z-20">
+      {/* <div className="absolute bottom-4 left-4 text-sm font-mono text-neutral-muted/30 select-none pointer-events-none z-20">
         {diagonalCm.toFixed(1)} cm
-      </div>
+      </div> */}
       <div
         className="origin-center"
         style={{
