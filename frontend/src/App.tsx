@@ -13,8 +13,11 @@ const queryClient = new QueryClient({
   },
 });
 
+// const DESIGN_WIDTH = 1920;
+// const DESIGN_HEIGHT = 1080;
+
 const DESIGN_WIDTH = 1920;
-const DESIGN_HEIGHT = 1080;
+const DESIGN_HEIGHT = 1152;
 
 function ScreenScaler({ children }: { children: React.ReactNode }) {
   const [scale, setScale] = useState(1);

@@ -19,9 +19,9 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:         "IPCR-Frontend",
 		Width:         800,
-		Height:        400,
+		Height:        480,
 		DisableResize: true,
-		Frameless: true,
+		Frameless:     true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

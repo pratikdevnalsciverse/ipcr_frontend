@@ -19,6 +19,18 @@ export const MainLayout = () => {
       case '/id-entry':
       case '/sample-type':
         return 'Step 1';
+      case '/sample-entry':
+        return 'Step 1';
+      case '/sample-preview':
+        return 'Confirm Details';
+      case '/insert-cartridge':
+        return 'Cartridge Setup';
+      case '/run':
+        return 'Testing';
+      case '/ThermalProfilePage':
+        return 'Thermal Graph';
+      case '/ImpedenceProfile':
+        return 'Impedance Graph';
       default:
         return 'I-PCR';
     }
